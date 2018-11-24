@@ -3,7 +3,7 @@ import React, { Component } from 'react'
 
 const io = socket('https://ws-api.iextrading.com/1.0/tops')
 
-let receivedText = ''
+// let receivedText = ''
 
 export default class Display extends Component {
     constructor(props){
@@ -12,6 +12,7 @@ export default class Display extends Component {
             receivedText: ''
         }
         this.updateText = this.updateText.bind(this)
+        this.listener = this.listener.bind(this)
     }
     updateText(){
         setInterval(() => {
@@ -20,10 +21,32 @@ export default class Display extends Component {
             receivedText: ''
             })
         }, 300);
-        
+    }
+
+    listener(){
+        // Listen to the channel's messages
+        io.on('message', message => {
+            this.setState({ receivedText: message })
+            
+            // console.log(message)
+        })
+
+        // Connect to the channel
+        io.on('connect', () => {
+
+        // Subscribe to topics (i.e. appl,fb,aig+)
+        io.emit('subscribe', 'snap,fb,aapl,aig+')
+
+        // Unsubscribe from topics (i.e. aig+)
+        //   io.emit('unsubscribe', 'aig+')
+        })
+
+        // Disconnect from the channel
+        io.on('disconnect', () => console.log('Disconnected.'))
     }
     componentDidMount(){
-        this.updateText()
+        // this.updateText()
+        this.listener()
     }
 
     componentDidUpdate(){
@@ -33,28 +56,28 @@ export default class Display extends Component {
         return(
             <div>
                 <h4>
-                    {receivedText}
+                    {this.state.receivedText}
                 </h4>
             </div>
         )
     }
 }
 
-// Listen to the channel's messages
-io.on('message', message => {
-    receivedText = message
-    // console.log(message)
-})
+// // Listen to the channel's messages
+// io.on('message', message => {
+//     receivedText = message
+//     // console.log(message)
+// })
 
-// Connect to the channel
-io.on('connect', () => {
+// // Connect to the channel
+// io.on('connect', () => {
 
-  // Subscribe to topics (i.e. appl,fb,aig+)
-  io.emit('subscribe', 'snap,fb,aig+')
+//   // Subscribe to topics (i.e. appl,fb,aig+)
+//   io.emit('subscribe', 'snap,fb,aig+')
 
-  // Unsubscribe from topics (i.e. aig+)
-//   io.emit('unsubscribe', 'aig+')
-})
+//   // Unsubscribe from topics (i.e. aig+)
+// //   io.emit('unsubscribe', 'aig+')
+// })
 
-// Disconnect from the channel
-io.on('disconnect', () => console.log('Disconnected.'))
+// // Disconnect from the channel
+// io.on('disconnect', () => console.log('Disconnected.'))
