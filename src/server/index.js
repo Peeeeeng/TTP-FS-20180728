@@ -3,7 +3,7 @@ const express = require('express')
 const morgan = require('morgan')
 const compression = require('compression')
 
-const db = require('./db')
+const { db } = require('./db')
 
 const PORT = process.env.PORT || 8080
 const app = express()

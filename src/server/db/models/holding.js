@@ -15,3 +15,5 @@ const Holding = db.define('holding', {
         }
     }
 })
+
+module.exports = Holding
