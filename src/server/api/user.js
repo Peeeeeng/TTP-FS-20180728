@@ -6,13 +6,12 @@ const { User } = require('../db')
 const eUser = 'Jhon Snow'
 const promoBalance = 500000
 
-
 // user post - create account, new user gets $5000 to start with(promo code maybe)
 userRouter.post('/', async (req, res, next) => {
     const { userName, email, password } = req.body
     const newUser = {
         userName,
-        email,
+        email: email.toLowerCase(),
         password,
         balance: promoBalance
     }
@@ -28,7 +27,7 @@ userRouter.put('/:uid', async (req, res, next) => {
     const { uid } = req.params
     const { userName } = req.body
     // if current user match uid / or just get uid from session
-    User.find({ where: { id: uid }})
+    User.findOne({ where: { id: uid }})
         .then((user) => {
             return user.update(userName)
         })

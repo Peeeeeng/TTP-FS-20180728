@@ -4,7 +4,7 @@ const defaultRecord = {records: []}
 
 const UPDATERECORDS = 'UPDATERECORDS'
 
-const updateRecords = newRecords => ({ type: UPDATERECORD, newRecords})
+const updateRecords = newRecords => ({ type: UPDATERECORDS, newRecords})
 
 export const getRecords = () => {
     return async dispatch => {

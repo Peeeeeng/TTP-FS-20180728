@@ -1,6 +1,9 @@
 const stockRouter = require('express').Router()
-const axios = require('axios').Router()
-const { User, Holding, Transaction } = require('../db')
+const axios = require('axios')
+
+const { epPrefix } = require('../utils/api-utils')
+const { Holding, Transaction } = require('../db')
+const User = require('../db/models/user')
 
 
 // user/stock get - get all current user's holding
@@ -28,27 +31,38 @@ stockRouter.get('/transaction/:uid', (req, res, next) => {
 stockRouter.post('/transaction/:uid', async (req, res, next) => {
     // check uid match session uid or get uid from session
     const { uid } = req.params
+    console.log('User ID is:', uid)
     let { symbol, shares, activity } = req.body
     shares = Math.abs(shares)
     if ( activity === 'BUY' ){
         // buy - before update, check if there's enough money to buy
-        let currentPrice = axios.get(`/stock/${symbol}/price`)
-        let user = User.find({ where: { id: uid }})
-        Promise.all([currentPrice, user])
-                .then(([pPrice, pUser]) => {
-                    currentPrice = pPrice
-                    user = pUser
-                })
-                .catch(next)
+        let currentPrice = await axios.get(`${epPrefix}/stock/${symbol}/price`)
+        let user = await User.findOne({ where: { id: uid }})
+
+        // let user = await User.findById(1)
+        console.log('current price is: ', currentPrice.data)
+        console.log('current user is: ', user.dataValues)
+        // Promise.all([currentPrice, user])
+        //         .then(function([res]){
+        //             console.log('**********Inside promiseAll')
+        //             console.log(res)
+        //             // console.log(pUser)
+        //             // currentPrice = pPrice * 100
+        //             // user = pUser
+        //         })
+        //         .catch(function(err){
+        //             console.error(err)
+        //         })
+        // console.log('Current Price is: ', currentPrice)
         // shares can not be nagetive
-        let expense = currentPrice * shares
+        let expense = currentPrice.data * 100 * shares
         if (expense > user.balance){
             res.status(403).send('Not enough balance for purchase')
         } else {
             let newTransaction = {
                 symbol,
                 activity,
-                price: currentPrice,
+                price: currentPrice.data,
                 shares,
                 userId: uid
             }
@@ -56,38 +70,42 @@ stockRouter.post('/transaction/:uid', async (req, res, next) => {
             // 1) search holding, add or create share in Holding
             // 2) deduct balance, update balance in User with new balance
             // 3) create new transaction in Transaction
-            Holding.find({ where: { userId: uid, symbol: symbol}})
+            Holding.findOne({ where: { userId: uid, symbol: symbol}})
                     .then((holding) => {
+                        // console.log(holding)
                         if(holding){
                             return holding.update({ shares: holding.shares + shares })
                         } else {
-                            return holding.update({ symbol, shares})
+                            return Holding.create({ symbol, shares, userId: uid})
                         }
                     })
                     .catch(next)
             user.update({ balance: user.balance - expense})
+                .then(()=>{})
+                .catch(next)
             Transaction.create(newTransaction)
                         .then((transaction) => {
                             res.send('success')
                         })
                         .catch(next)
+            // res.send('success')
         }
     } else if ( activity === 'SELL' ) {
         // sell - before update, check if there's enough shares to sell
-        let currentPrice = axios.get(`/stock/${symbol}/price`)
-        let holding = Holding.find({ where: { userId: uid, symbol: symbol }})
-        Promise.all([currentPrice, holding])
-                .then(([pPrice, pHolding]) => {
-                    currentPrice = pPrice
-                    holding = pHolding
-                })
-                .catch(next)
+        let currentPrice = await axios.get(`${epPrefix}/stock/${symbol}/price`)
+        let holding = await Holding.findOne({ where: { userId: uid, symbol: symbol }})
+        // Promise.all([currentPrice, holding])
+        //         .then(([pPrice, pHolding]) => {
+        //             currentPrice = pPrice * 100
+        //             holding = pHolding
+        //         })
+        //         .catch(next)
         if (holding && holding.shares >= shares){
-            let profit = currentPrice * shares
+            let profit = currentPrice.data * shares
             let newTransaction = {
                 symbol,
                 activity,
-                price: currentPrice,
+                price: currentPrice.data,
                 shares,
                 userId: uid
             }
@@ -98,7 +116,7 @@ stockRouter.post('/transaction/:uid', async (req, res, next) => {
             holding.update({ shares: holding.shares - shares })
                     .then(() => {})
                     .catch(next)
-            User.find({ where: { id: uid } })
+            User.findOne({ where: { id: uid } })
                 .then((user) => {
                     return user.update({ balance: user.balance + profit})
                 })
@@ -112,6 +130,7 @@ stockRouter.post('/transaction/:uid', async (req, res, next) => {
         } else {
             res.status(403).send('Do not have enough shares to sell')
         }
+        // res.send('Connect success!')
     }
     
 
