@@ -22,6 +22,20 @@ userRouter.post('/', async (req, res, next) => {
         .catch(next)
 })
 
+userRouter.put('/login', (req, res, next) => {
+    const { email, password } = req.body
+    User.findOne({ where: { email, password }})
+        .then((user) => {
+            if(user){
+                // pass back without password?
+                res.json(user)
+            } else {
+                res.status(401).send('Email or Password incorrect')
+            }
+        })
+        .catch(next)
+})
+
 // user/:UId put - update userName /password-maybe, email cannot be changed
 userRouter.put('/:uid', async (req, res, next) => {
     const { uid } = req.params

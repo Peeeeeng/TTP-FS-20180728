@@ -2,8 +2,7 @@ const stockRouter = require('express').Router()
 const axios = require('axios')
 
 const { epPrefix } = require('../utils/api-utils')
-const { Holding, Transaction } = require('../db')
-const User = require('../db/models/user')
+const { User, Holding, Transaction } = require('../db')
 
 
 // user/stock get - get all current user's holding
