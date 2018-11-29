@@ -4,12 +4,12 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 In the project directory, you can run:
 
-### Run backend server please use 'npm run server'
+### `npm run server` will run backend server. 
 
 In order to run the backend, you need a postgres database and create a database call 'stocker'.
 The backend will create all the tables that are needed to run.
 
-### Run frontend please use `npm start`
+### `npm start` will run the frontend. 
 
 Runs the app in the development mode.<br>
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
