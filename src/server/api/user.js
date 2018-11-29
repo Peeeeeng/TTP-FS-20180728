@@ -26,8 +26,10 @@ userRouter.put('/login', (req, res, next) => {
         .then((user) => {
             if(user){
                 req.session.userId = user.id
-                
+                console.log(user.dataValues)
+                user.dataValues.password = null
                 // pass back without password?
+
                 res.json(user)
             } else {
                 res.status(401).send('Email or Password incorrect')
@@ -42,6 +44,7 @@ userRouter.get('/varify', (req, res, next) => {
             .then((user) => {
                 if(user){
                     // pass back without password?
+                    user.dataValues.password = null
                     res.json(user)
                 } else {
                     res.status(404).send('Not exist')
@@ -67,19 +70,7 @@ userRouter.put('/', async (req, res, next) => {
         .catch(next)
 })
 
-// user get - get userName by email, varify if account exist already
-
-// user/validation get - validate if the email & password matchs
-
-
-
 userRouter.use('/stock', require('./stock'))
-// user/stock/transaction get - get current user's all transactions
-
-// user/stock/transaction post - create a buy/sell transaction 
-// buy - before update, check if there's enough money to buy
-// sell - before update, check if there's enough shares to sell
-
 
 
 module.exports = userRouter

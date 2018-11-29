@@ -10,8 +10,6 @@ stockRouter.get('/', async (req, res, next) => {
     const uid = req.session.userId
     Holding.findAll({ where: { userId: uid }})
             .then((holdings) => {
-                console.log(holdings)
-                
                 res.send(holdings)
             })
             .catch(next)
