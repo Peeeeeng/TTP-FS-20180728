@@ -2,6 +2,8 @@ const path = require('path')
 const express = require('express')
 const morgan = require('morgan')
 const compression = require('compression')
+const session = require('express-session')
+const sessionSecret = process.env.SSCRET || 'wonder4day'
 
 const { db } = require('./db')
 
@@ -17,11 +19,15 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(compression())
 app.use(express.static(path.join(__dirname, '../public')))
-
-// app.use('*', (req, res, next) => {
-//     console.log('API for all router trigered!')
-//     res.status(404).send('API route is here!')
-// })
+app.use(session({
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        secure: false,
+        maxAge: 864000000
+    }
+}))
 
 app.use('/api', require('./api/route'))
 

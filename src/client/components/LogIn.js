@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 import { thunkLogin } from '../store/user'
 
 class LogIn extends Component {
@@ -17,19 +18,27 @@ class LogIn extends Component {
         }
         let res = await this.props.userLogIn(user)
         console.log(res)
+        this.props.history.push('/')
     }
 
     render(){
         return(
             <form onSubmit={this.handleSubmit}>
-                <div>
-                    <label>Email</label>
-                    <input type='text' name='email' />
-                </div>
-                <div>
-                    <label>Password</label>
-                    <input type='text' name='password' />
-                </div>
+            <caption>User LogIn</caption>
+            <table className='form_table'>
+                <tbody>
+                    <tr>
+                        <th>
+                            <input type='text' name='email' placeholder='Email' />
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>
+                        <input type='password' name='password' placeholder='Password'/>
+                        </th>
+                    </tr>
+                    </tbody>
+                </table>
                 <button type='submit'>Log In</button>
                 <button type='button'>Cancel</button>
             </form>
@@ -43,4 +52,4 @@ const mapDispatch = (dispatch) => {
     }
 }
 
-export default connect(null, mapDispatch)(LogIn)
+export default withRouter(connect(null, mapDispatch)(LogIn))

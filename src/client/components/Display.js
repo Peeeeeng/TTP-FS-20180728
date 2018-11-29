@@ -1,181 +1,106 @@
-import socket from 'socket.io-client'
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { thunkGetHoldings } from '../store/holdings'
+import './components.css'
 import axios from 'axios'
-// const backendHost = 'http://localhost:8080'
 
-const io = socket('https://ws-api.iextrading.com/1.0/tops')
 
-// let receivedText = ''
 
-export default class Display extends Component {
+class Display extends Component {
     constructor(props){
         super(props)
         this.state = {
-            receivedText: '',
-            userName: '',
-            email: '',
-            password: '',
-            symbol: '',
-            shares: 0,
+            hDetails: {},
         }
-        this.updateText = this.updateText.bind(this)
-        this.listener = this.listener.bind(this)
         this.handleChange = this.handleChange.bind(this)
-        this.handleSubmit = this.handleSubmit.bind(this)
-        this.handlePurchase = this.handlePurchase.bind(this)
-        this.handleSell = this.handleSell.bind(this)
-        this.handleGetHolding = this.handleGetHolding.bind(this)
-        this.handleGetTransaction = this.handleGetTransaction.bind(this)
     }
-    updateText(){
-        setInterval(() => {
-            console.log('call update')
-            this.setState({
-            receivedText: ''
-            })
+
+    componentDidMount(){
+        this.props.getHoldings()
+        this.autoUpdateHoldings()
+    }
+
+   autoUpdateHoldings(){
+        this.autoRun = setInterval(() => {
+            // console.log('call update')
+            const { holdings } = this.props
+            this.updateH(holdings)
         }, 300);
     }
 
-    listener(){
-        // Listen to the channel's messages
-        io.on('message', message => {
-            this.setState({ receivedText: message })
-            
-            // console.log(message)
+    componentWillUnmount(){
+        clearInterval(this.autoRun)
+    }
+
+    async updateH(holdings){
+        let hdPromis = holdings.map((holding) => {
+            return axios.get(`https://api.iextrading.com/1.0/stock/${holding.symbol}/quote`)
         })
-
-        // Connect to the channel
-        io.on('connect', () => {
-
-        // Subscribe to topics (i.e. appl,fb,aig+)
-        io.emit('subscribe', 'snap,fb,aapl,aig+')
-
-        // Unsubscribe from topics (i.e. aig+)
-        //   io.emit('unsubscribe', 'aig+')
-        })
-
-        // Disconnect from the channel
-        io.on('disconnect', () => console.log('Disconnected.'))
-    }
-    componentDidMount(){
-        // this.updateText()
-        this.listener()
-    }
-
-    componentDidUpdate(){
-        // this.updateText()
-    }
-    async handleSubmit(evt){
-        evt.preventDefault()
-        console.log('Form submitted!')
-        const { userName, email, password } = this.state
-        const newUser = {
-            userName,
-            email,
-            password
+        let hdRes = await Promise.all(hdPromis)
+        let hDetails = {}
+        for(let i = 0; i < hdRes.length; i++){
+            const { symbol, open, latestPrice } = hdRes[i].data
+            hDetails[symbol.toLowerCase()] = { openPrice: open, currentPrice: latestPrice}
         }
-        const user = await axios.post(`/api/user`, newUser)
-        console.log(user)
+        console.log('Holding details:')
+        console.log(hDetails)
+        this.setState({ hDetails })
     }
 
     handleChange(evt){
         this.setState({ [evt.target.name]: evt.target.value })
     }
 
-    async handleGetHolding(evt){
-        const holdings = await axios.get(`/api/user/stock/1`)
-        console.log(holdings)
-    }
-
-    async handleGetTransaction(evt){
-        const transactions = await axios.get(`/api/user/stock/transaction/1`)
-        console.log(transactions)
-    }
-
-    async handlePurchase(evt){
-        evt.preventDefault()
-        const { symbol, shares } = this.state
-        const newTransaction = {
-            symbol,
-            shares,
-            activity: 'BUY'
-        }
-        const transactions = await axios.post(`/api/user/stock/transaction/1`, newTransaction)
-        console.log(transactions)
-    }
-
-    async handleSell(evt){
-        const { symbol, shares } = this.state
-        const newTransaction = {
-            symbol,
-            shares,
-            activity: 'SELL'
-        }
-        const transactions = await axios.post(`/api/user/stock/transaction/1`, newTransaction)
-        console.log(transactions)
-    }
-
     render(){
-        const { userName, email, password } = this.state
-        const { symbol, shares } = this.state
+        const { holdings } = this.props
+        const { hDetails } = this.state
+        console.log(holdings)
         return(
-            <div>
-                <h4>
-                    {this.state.receivedText}
-                </h4>
-                <form onSubmit={this.handleSubmit}>
-                    <label>Register User</label>
-                    <div>
-                        <label>Name</label>
-                        <input type='text' name='userName' value={userName} onChange={this.handleChange} />
-                    </div>
-                    <div>
-                        <label>Email</label>
-                        <input type='text' name='email' value={email} onChange={this.handleChange} />
-                    </div>
-                    <div>
-                        <label>Password</label>
-                        <input type='text' name='password' value={password} onChange={this.handleChange} />
-                    </div>
-                    <button type='submit'>Register!</button>
-                    <button type='button'>Cancel</button>
-                </form>
-                <hr></hr>
-                <form onSubmit={this.handlePurchase}>
-                    <label>Stork Transactions</label>
-                    <div>
-                        <label>Symbol</label>
-                        <input type='text' name='symbol' value={symbol} onChange={this.handleChange} />
-                    </div>
-                    <div>
-                        <label>Qty</label>
-                        <input type='text' name='shares' value={shares} onChange={this.handleChange} />
-                    </div>
-                    <button type='button' onClick={this.handlePurchase}>BUY!</button>
-                    <button type='button' onClick={this.handleSell}>SELL</button>
-                    <button type='button' onClick={this.handleGetHolding}>Get Holding</button>
-                    <button type='button' onClick={this.handleGetTransaction}>Get Transactions</button>
-                </form>
-            </div>
+            <table className='display_table'>
+                <tbody>
+                {holdings.map((holding) => {
+                    const { id, symbol, shares } = holding
+                    let fontColor = 'grey'
+                    if(hDetails[symbol]){
+                        if(hDetails[symbol].currentPrice > hDetails[symbol].openPrice){
+                            fontColor = 'green'
+                        } else if(hDetails[symbol].currentPrice < hDetails[symbol].openPrice){
+                            fontColor = 'red'
+                        }
+                    }
+                    return (
+                        <tr key={id}>
+                            <th>
+                                <font color={fontColor}>
+                                {`${symbol.toUpperCase()} -  ${shares} Shares`}
+                                </font>
+                            </th>
+                            <th>
+                                <font color={fontColor}>
+                                {`$${shares*(hDetails[symbol] ? hDetails[symbol].currentPrice : 11)}`}
+                                </font>
+                            </th>
+                        </tr>
+                    )
+                })}
+                </tbody>
+            </table>
         )
     }
 }
 
-// // Listen to the channel's messages
-// io.on('message', message => {
-//     receivedText = message
-//     // console.log(message)
-// })
+const mapState = (state) => {
+    return {
+        user: state.user,
+        holdings: state.holdings,
+        transactions: state.transactions
+    }
+}
 
-// // Connect to the channel
-// io.on('connect', () => {
+const mapDispatch = (dispatch) => {
+    return {
+        getHoldings: () => dispatch(thunkGetHoldings()),
+    }
+}
 
-//   // Subscribe to topics (i.e. appl,fb,aig+)
-//   io.emit('subscribe', 'snap,fb,aig+')
-
-//   // Unsubscribe from topics (i.e. aig+)
-// //   io.emit('unsubscribe', 'aig+')
-// })
-
-// // Disconnect from the channel
-// io.on('disconnect', () => console.log('Disconnected.'))
+export default connect(mapState, mapDispatch)(Display)

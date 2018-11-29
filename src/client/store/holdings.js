@@ -13,7 +13,7 @@ const getHoldings = (holdings) => {
 
 export const thunkGetHoldings = () => {
     return async (dispatch) => {
-        axios.get(`/api/user/stock/1`)
+        axios.get(`/api/user/stock`)
                 .then((holdings) => {
                     dispatch(getHoldings(holdings.data))
                 })

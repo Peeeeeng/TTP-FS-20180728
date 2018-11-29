@@ -12,7 +12,7 @@ const getTrans = trans => ({ type: GETTRANS, trans})
 export const thunkGetTrans = () => {
     return async dispatch => {
         try{
-            const res = await axios.get(`/api/user/stock/transaction/1`)
+            const res = await axios.get(`/api/user/stock/transaction`)
             dispatch(getTrans(res.data))
         } catch (err) {
             console.errors(err)
@@ -23,7 +23,7 @@ export const thunkGetTrans = () => {
 
 export const thunkCreateTrans = (trans) => {
     return async dispatch => {
-        axios.post(`/api/user/stock/transaction/1`, trans)
+        axios.post(`/api/user/stock/transaction`, trans)
                 .then((res) => {
                     // there might be another transaction complete in different place under same account
                     dispatch(thunkGetTrans())

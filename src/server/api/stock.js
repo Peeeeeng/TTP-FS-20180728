@@ -6,20 +6,20 @@ const { User, Holding, Transaction } = require('../db')
 
 
 // user/stock get - get all current user's holding
-stockRouter.get('/:uid', (req, res, next) => {
-    // check uid match session uid or get uid from session
-    const { uid } = req.params
-    Holding.findAll({ where: { id: uid }})
+stockRouter.get('/', async (req, res, next) => {
+    const uid = req.session.userId
+    Holding.findAll({ where: { userId: uid }})
             .then((holdings) => {
+                console.log(holdings)
+                
                 res.send(holdings)
             })
             .catch(next)
 })
 
 // user/stock/transaction get - get all current user's transactions
-stockRouter.get('/transaction/:uid', (req, res, next) => {
-    // check uid match session uid or get uid from session
-    const { uid } = req.params
+stockRouter.get('/transaction', (req, res, next) => {
+    const uid = req.session.userId
     Transaction.findAll({ where: { userId: uid }})
                 .then((transactions) => {
                     res.send(transactions)
@@ -27,9 +27,9 @@ stockRouter.get('/transaction/:uid', (req, res, next) => {
                 .catch(next)
 })
 // user/stock/transaction post - create a buy/sell transaction 
-stockRouter.post('/transaction/:uid', async (req, res, next) => {
+stockRouter.post('/transaction', async (req, res, next) => {
     // check uid match session uid or get uid from session
-    const { uid } = req.params
+    const uid = req.session.userId
     console.log('User ID is:', uid)
     let { symbol, shares, activity } = req.body
     shares = Math.abs(shares)

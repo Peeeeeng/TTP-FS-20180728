@@ -1,0 +1,58 @@
+.display_table {
+    border-collapse: collapse;
+    width: 25vw;
+    margin-top: 10vh;
+    margin-left: 10vw;
+}
+
+.display_table th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 3px solid rgb(94, 94, 94);
+}
+caption {
+    display: flex;
+    justify-content: center;
+}
+
+.form_table {
+    border-collapse: collapse;
+    display: flex;
+    /* flex-direction: column; */
+    /* width: 26vw;
+    margin-top: 10vh;
+    margin-left: 37vw; */
+    justify-content: center;
+}
+
+.form_table th, td {
+    padding: 8px;
+    text-align: left;
+    /* border-bottom: 3px solid rgb(94, 94, 94); */
+}
+
+#business_table {
+    border-collapse: collapse;
+    width: 30vw;
+    margin-top: 10vh;
+    margin-left: 10vw;
+}
+
+#business_table th, td {
+    border-bottom: 0px solid rgb(94, 94, 94);
+}
+
+#business_table_caption {
+    display: flex;
+    width: 100%;
+    margin-left: 50%
+} 
+
+#portfolio_Main {
+    display: flex;
+    flex-direction: row;
+}
+
+button {
+    margin: 0.7vw;
+}

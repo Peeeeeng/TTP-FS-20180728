@@ -7,11 +7,19 @@ const initialUser = {
     balance: 0
 }
 
-const CREATEUSER = 'CREATEUSER'
+// const CREATEUSER = 'CREATEUSER'
+const SETUSER = 'SETUSER'
 
-const createUser = (user) => {
+// const createUser = (user) => {
+//     return {
+//         type: CREATEUSER,
+//         user
+//     }
+// }
+
+const setUser = (user) => {
     return {
-        type: CREATEUSER,
+        type: SETUSER,
         user
     }
 }
@@ -26,7 +34,38 @@ export const thunkCreateUser = (user) => {
         }
         axios.post(`/api/user`, newUser)
                 .then((rUser) => {
-                    dispatch(createUser(rUser.data))
+                    dispatch(setUser(rUser.data))
+                })
+                .catch((err) => {
+                    console.error(err)
+                    return err
+                })
+    }
+}
+
+export const thunkLogin = (user) => {
+    return async (dispatch) => {
+        const { email, password } = user
+        const newUser = {
+            email,
+            password
+        }
+        axios.put(`/api/user/login`, newUser)
+                .then((rUser) => {
+                    dispatch(setUser(rUser.data))
+                })
+                .catch((err) => {
+                    console.error(err)
+                    return err
+                })
+    }
+}
+
+export const thunkVarifyUser = () => {
+    return async (dispatch) => {
+        axios.get('/api/user/varify')
+                .then((rUser) => {
+                    dispatch(setUser(rUser.data))
                 })
                 .catch((err) => {
                     console.error(err)
@@ -37,7 +76,7 @@ export const thunkCreateUser = (user) => {
 
 const reducer = (state = initialUser, action) => {
     switch(action.type){
-        case CREATEUSER:
+        case SETUSER:
             const { userName, email, id, balance } = action.user
             return {...state, userName, email, id, balance}
         default:

@@ -2,8 +2,6 @@ const userRouter = require('express').Router()
 const axios = require('axios')
 const { User } = require('../db')
 
-
-const eUser = 'Jhon Snow'
 const promoBalance = 500000
 
 // user post - create account, new user gets $5000 to start with(promo code maybe)
@@ -27,6 +25,8 @@ userRouter.put('/login', (req, res, next) => {
     User.findOne({ where: { email, password }})
         .then((user) => {
             if(user){
+                req.session.userId = user.id
+                
                 // pass back without password?
                 res.json(user)
             } else {
@@ -36,9 +36,25 @@ userRouter.put('/login', (req, res, next) => {
         .catch(next)
 })
 
+userRouter.get('/varify', (req, res, next) => {
+    if(req.session.userId){
+        User.findById(req.session.userId)
+            .then((user) => {
+                if(user){
+                    // pass back without password?
+                    res.json(user)
+                } else {
+                    res.status(404).send('Not exist')
+                }
+            })
+    } else {
+        res.status(404).send('Not exist')
+    }
+})
+
 // user/:UId put - update userName /password-maybe, email cannot be changed
-userRouter.put('/:uid', async (req, res, next) => {
-    const { uid } = req.params
+userRouter.put('/', async (req, res, next) => {
+    const uid = req.session.userId
     const { userName } = req.body
     // if current user match uid / or just get uid from session
     User.findOne({ where: { id: uid }})
