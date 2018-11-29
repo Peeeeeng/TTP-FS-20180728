@@ -8,6 +8,7 @@ In the project directory, you can run:
 
 In order to run the backend, you need a postgres database and create a database call 'stocker'.
 The backend will create all the tables that are needed to run.
+Backend server runs on http://localhost:8080.
 
 ### `npm start` will run the frontend. 
 
