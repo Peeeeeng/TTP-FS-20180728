@@ -32,16 +32,17 @@ class Business extends Component {
                     activity: evt.target.name
                 }
                 this.props.createTransaction(newTransaction)
-                            .then((res) => {
-                                console.log('Transaction created successfully')
-                                return this.props.getHoldings()
-                            })
-                            .then(() => {
-                                return this.props.getTransactions()
-                            })
-                            .then(() => {
-                                this.props.getUser()
-                            })
+                            // .then((res) => {
+                            //     console.log('Transaction created successfully')
+                            //     return this.props.getHoldings()
+                            // })
+                            // .then(() => {
+                            //     return this.props.getTransactions()
+                            // })
+                            // .then(() => {
+                            //     this.props.getUser()
+                            // })
+                            .then(() => {})
                             .catch((err) => {
                                 console.log('Transaction error!')
                                 console.error(err)

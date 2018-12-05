@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { thunkGetHoldings } from './holdings'
-import Business from '../components/Business'
+import { thunkVarifyUser } from './user'
 
 const initialTransactions = {transactions: []}
 
@@ -31,12 +31,12 @@ export const thunkCreateTrans = (trans) => {
                     console.log(res)
                     dispatch(thunkGetTrans())
                     dispatch(thunkGetHoldings())
+                    dispatch(thunkVarifyUser())
                     return res
                 })
                 .catch((err) => {
                     // console.log('Create trans error occured')
                     console.error(err)
-                    // Business.setState({ tip: 'The symbol is incorrect.' })
                     alert("The symbol is incorrect.")
                     return err
                 })
