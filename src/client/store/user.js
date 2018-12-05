@@ -10,12 +10,6 @@ const initialUser = {
 // const CREATEUSER = 'CREATEUSER'
 const SETUSER = 'SETUSER'
 
-// const createUser = (user) => {
-//     return {
-//         type: CREATEUSER,
-//         user
-//     }
-// }
 
 const setUser = (user) => {
     return {
@@ -38,6 +32,7 @@ export const thunkCreateUser = (user) => {
                 })
                 .catch((err) => {
                     console.error(err)
+                    alert("You've register with this email before.")
                     return err
                 })
     }
@@ -56,6 +51,7 @@ export const thunkLogin = (user) => {
                 })
                 .catch((err) => {
                     console.error(err)
+                    alert("Email and password not match.")
                     return err
                 })
     }

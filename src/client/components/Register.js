@@ -6,6 +6,9 @@ import { thunkCreateUser } from '../store/user'
 class Register extends Component {
     constructor(props){
         super(props)
+        this.state = {
+            tip: ''
+        }
         this.handleSubmit = this.handleSubmit.bind(this)
     }
 
@@ -17,9 +20,21 @@ class Register extends Component {
             email: evt.target.email.value,
             password: evt.target.password.value
         }
-        let res = await this.props.userRegister(user)
-        console.log(res)
-        this.props.history.push('/')
+        let userName = user.userName.split(' ').join('')
+        let email = user.email.split(' ').join('')
+        let password = user.password.split(' ').join('')
+        if(!userName){
+            this.setState({ tip: 'User Name can not be empty.'})
+        } else if(!email) {
+            this.setState({ tip: 'Email can not be empty.'})
+        } else if(!password) {
+            this.setState({ tip: 'Password can not be empty.'})
+        } else {
+            let res = await this.props.userRegister(user)
+            console.log(res)
+            this.props.history.push('/')
+        }
+        
     }
 
     render(){
@@ -35,12 +50,17 @@ class Register extends Component {
                     </tr>
                     <tr>
                         <th>
-                            <input type='text' name='email' placeholder='Email' />
+                            <input type='email' name='email' placeholder='Email' />
                         </th>
                     </tr>
                     <tr>
                         <th>
                         <input type='password' name='password' placeholder='Password'/>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <font color='red'>{this.state.tip}</font>
                         </th>
                     </tr>
                     </tbody>

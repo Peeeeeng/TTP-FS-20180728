@@ -26,10 +26,13 @@ export const thunkCreateTrans = (trans) => {
         axios.post(`/api/user/stock/transaction`, trans)
                 .then((res) => {
                     // there might be another transaction complete in different place under same account
+                    console.log('This is create trans')
+                    console.log(res)
                     dispatch(thunkGetTrans())
                     dispatch(thunkGetHoldings())
                 })
                 .catch((err) => {
+                    // console.log('Create trans error occured')
                     console.error(err)
                     return err
                 })

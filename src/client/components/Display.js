@@ -42,8 +42,8 @@ class Display extends Component {
             const { symbol, open, latestPrice } = hdRes[i].data
             hDetails[symbol.toLowerCase()] = { openPrice: open, currentPrice: latestPrice}
         }
-        console.log('Holding details:')
-        console.log(hDetails)
+        // console.log('Holding details:')
+        // console.log(hDetails)
         this.setState({ hDetails })
     }
 
@@ -54,7 +54,7 @@ class Display extends Component {
     render(){
         const { holdings } = this.props
         const { hDetails } = this.state
-        console.log(holdings)
+        // console.log(holdings)
         return(
             <table className='display_table'>
                 <tbody>

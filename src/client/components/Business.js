@@ -9,38 +9,54 @@ class Business extends Component {
         super(props)
         this.state = {
             symbol: '',
-            shares: 0
+            shares: 0,
+            tip: ''
         }
         this.handleTransaction = this.handleTransaction.bind(this)
         this.handleChange = this.handleChange.bind(this)
     }
 
     handleChange(evt){
-        this.setState({ [evt.target.name]: evt.target.value })
+        this.setState({ [evt.target.name]: evt.target.value, tip: '' })
     }
 
     handleTransaction(evt){
         evt.preventDefault()
         const { symbol, shares } = this.state
-        const newTransaction = {
-            symbol,
-            shares,
-            activity: evt.target.name
+        if(symbol.split(' ').join('')){
+            if(shares > 0 && Number.isInteger(Number(shares))){
+                const newTransaction = {
+                    symbol,
+                    shares,
+                    activity: evt.target.name
+                }
+                this.props.createTransaction(newTransaction)
+                            .then((res) => {
+                                return this.props.getHoldings()
+                            })
+                            .then(() => {
+                                this.props.getTransactions()
+                            })
+                            .catch((err) => {
+                                console.log('Transaction error!')
+                                console.error(err)
+                            })
+            } else {
+                if(isNaN(shares)){
+                    this.setState({ shares: 0, tip: 'Qty needs to be a number.' })
+                } else if(shares < 1) {
+                    this.setState({ shares: 0, tip: 'Qty needs to be bigger than 0.' })
+                } else if(!Number.isInteger(Number(shares))) {
+                    this.setState({ shares: 0, tip: 'Qty needs to be a whole number.' })
+                }
+            }
+        } else {
+            this.setState({ symbol: '', tip: 'Symbol can not be empty.' })
         }
-        this.props.createTransaction(newTransaction)
-                    .then(() => {
-                        console.log('get holdings')
-                        return this.props.getHoldings()
-                    })
-                    .then(() => {
-                        console.log('get transactions')
-                        this.props.getTransactions()
-                    })
-                    .catch((err) => {
-                        console.error(err)
-                    })
     }
+
     render(){
+        const { symbol, shares, tip } = this.state
         return(
             
             <form onSubmit={this.handleTransaction}>
@@ -52,7 +68,7 @@ class Business extends Component {
                 <label>Symbol</label>
                 </th>
                 <th>
-                <input type='text' name='symbol' onChange={this.handleChange} />
+                <input type='text' name='symbol' onChange={this.handleChange} value={symbol} />
                 </th>
             </tr>
             <tr>
@@ -60,7 +76,12 @@ class Business extends Component {
                 <label>Qty</label>
                 </th>
                 <th>
-                <input type='text' name='shares' onChange={this.handleChange} />
+                <input type='text' name='shares' onChange={this.handleChange} value={shares} />
+                </th>
+            </tr>
+            <tr>
+                <th colSpan='2' >
+                <font color='red'>{tip}</font>
                 </th>
             </tr>
             </tbody>
