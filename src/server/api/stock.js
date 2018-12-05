@@ -142,10 +142,26 @@ stockRouter.post('/transaction', async (req, res, next) => {
                 // 2) deduct balance, update balance in User with new balance
                 // 3) create new transaction in Transaction
 
-                console.log('Profit is: ', profit)
-                rHolding.update({ shares: rHolding.shares - shares })
-                        .then(() => {})
-                        .catch(next)
+                // console.log('Profit is: ', profit)
+                // if(rHolding.shares === shares){
+                //     resHolding = rHolding.destroy()
+                // } else {
+                //     resHolding = rHolding.update({ shares: rHolding.shares - shares })
+                // }
+                // let resUser = User.findOne({ where: { id: uid } })
+                // let resTransaction = Transaction.create(newTransaction)
+                // let [ rUser ] = await Promise.all([ resUser, resHolding, resTransaction ])
+                // rUser.increment('balance', { by: profit })
+                //         .then(() => {})
+                //         .catch(next)
+
+                if(rHolding.shares === shares){
+                    resHolding = rHolding.destroy()
+                } else {
+                    rHolding.update({ shares: rHolding.shares - shares })
+                            .then(() => {})
+                            .catch(next)
+                }
                 User.findOne({ where: { id: uid } })
                     .then((user) => {
                         // console.log('User balance')
