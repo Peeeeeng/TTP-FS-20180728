@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { thunkCreateTrans, thunkGetTrans } from '../store/transactions'
 import { thunkGetHoldings } from '../store/holdings'
+import { thunkVarifyUser } from '../store/user'
 
 
 class Business extends Component {
@@ -32,10 +33,14 @@ class Business extends Component {
                 }
                 this.props.createTransaction(newTransaction)
                             .then((res) => {
+                                console.log('Transaction created successfully')
                                 return this.props.getHoldings()
                             })
                             .then(() => {
-                                this.props.getTransactions()
+                                return this.props.getTransactions()
+                            })
+                            .then(() => {
+                                this.props.getUser()
                             })
                             .catch((err) => {
                                 console.log('Transaction error!')
@@ -106,6 +111,7 @@ const mapDispatch = (dispatch) => {
         createTransaction: (trans) => dispatch(thunkCreateTrans(trans)),
         getTransactions: () => dispatch(thunkGetTrans()),
         getHoldings: () => dispatch(thunkGetHoldings()),
+        getUser: () => dispatch(thunkVarifyUser()),
     }
 }
 

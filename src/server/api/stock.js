@@ -38,8 +38,6 @@ stockRouter.post('/transaction', async (req, res, next) => {
             // buy - before update, check if there's enough money to buy
             let resPrice = axios.get(`${epPrefix}/stock/${symbol}/price`)
             let resUser = User.findOne({ where: { id: uid } })
-            let currentPrice
-            let user
 
             // let user = await User.findById(1)
             // console.log('current price is: ', currentPrice.data)
@@ -62,8 +60,8 @@ stockRouter.post('/transaction', async (req, res, next) => {
             // console.log(currentPrice)
 
 
-            currentPrice = rPrice.data
-            user = rUser
+            let currentPrice = rPrice.data
+            let user = rUser
 
             // console.log('--------After promise all-----------')
             let expense = currentPrice * 100 * shares
@@ -73,7 +71,7 @@ stockRouter.post('/transaction', async (req, res, next) => {
                 let newTransaction = {
                     symbol,
                     activity,
-                    price: currentPrice,
+                    price: currentPrice * 100,
                     shares,
                     userId: uid
                 }
@@ -81,42 +79,60 @@ stockRouter.post('/transaction', async (req, res, next) => {
                 // 1) search holding, add or create share in Holding
                 // 2) deduct balance, update balance in User with new balance
                 // 3) create new transaction in Transaction
-                Holding.findOne({ where: { userId: uid, symbol: symbol}})
-                        .then((holding) => {
-                            // console.log(holding)
-                            if(holding){
-                                return holding.update({ shares: holding.shares + shares })
-                            } else {
-                                return Holding.create({ symbol, shares, userId: uid})
-                            }
-                        })
-                        .catch(next)
-                user.update({ balance: user.balance - expense})
-                    .then(()=>{})
-                    .catch(next)
-                Transaction.create(newTransaction)
-                            .then((transaction) => {
-                                res.send('success')
-                            })
-                            .catch(next)
-                // res.send('success')
+
+                // Holding.findOne({ where: { userId: uid, symbol: symbol}})
+                //         .then((holding) => {
+                //             // console.log(holding)
+                //             if(holding){
+                //                 return holding.update({ shares: holding.shares + shares })
+                //             } else {
+                //                 return Holding.create({ symbol, shares, userId: uid})
+                //             }
+                //         })
+                //         .catch(next)
+                // user.update({ balance: user.balance - expense})
+                //     .then(()=>{})
+                //     .catch(next)
+                // Transaction.create(newTransaction)
+                //             .then((transaction) => {
+                //                 res.send(user)
+                //             })
+                //             .catch(next)
+
+
+
+                let resHolding = Holding.findOne({ where: { userId: uid, symbol: symbol}})
+                let resUser = user.update({ balance: user.balance - expense})
+                let resTransaction = Transaction.create(newTransaction)
+                let [ rHolding, rUser, rTransaction ] = await Promise.all([ resHolding, resUser, resTransaction ])
+                console.log(rHolding)
+                
+                if(rHolding){
+                    resHolding = await rHolding.update({ shares: rHolding.shares + shares })
+                } else {
+                    resHolding = await Holding.create({ symbol, shares, userId: uid})
+                }
+
+                res.send(resHolding)
             }
         } else if ( activity === 'SELL' ) {
             // sell - before update, check if there's enough shares to sell
-            let currentPrice = await axios.get(`${epPrefix}/stock/${symbol}/price`)
-            let holding = await Holding.findOne({ where: { userId: uid, symbol: symbol }})
+            let resCurrentPrice = await axios.get(`${epPrefix}/stock/${symbol}/price`)
+            let resHolding = await Holding.findOne({ where: { userId: uid, symbol: symbol }})
             // Promise.all([currentPrice, holding])
             //         .then(([pPrice, pHolding]) => {
             //             currentPrice = pPrice * 100
             //             holding = pHolding
             //         })
             //         .catch(next)
-            if (holding && holding.shares >= shares){
-                let profit = currentPrice * shares
+            let [ rCurrentPrice, rHolding ] = await Promise.all([ resCurrentPrice, resHolding ])
+            let currentPrice = rCurrentPrice.data
+            if (rHolding && rHolding.shares >= shares){
+                let profit = currentPrice * 100 * shares
                 let newTransaction = {
                     symbol,
                     activity,
-                    price: currentPrice,
+                    price: currentPrice * 100,
                     shares,
                     userId: uid
                 }
@@ -124,11 +140,15 @@ stockRouter.post('/transaction', async (req, res, next) => {
                 // 1) search holding, add or create share in Holding
                 // 2) deduct balance, update balance in User with new balance
                 // 3) create new transaction in Transaction
-                holding.update({ shares: holding.shares - shares })
+
+                console.log('Profit is: ', profit)
+                rHolding.update({ shares: rHolding.shares - shares })
                         .then(() => {})
                         .catch(next)
                 User.findOne({ where: { id: uid } })
                     .then((user) => {
+                        console.log('User balance')
+                        console.log(user.balance)
                         return user.update({ balance: user.balance + profit})
                     })
                     .then(() => {})
@@ -145,13 +165,13 @@ stockRouter.post('/transaction', async (req, res, next) => {
         }
 
     } catch(err) {
-        console.log('**********err.response**************')
-        console.log(err.response.status)
-        console.log('**********err.message***************')
-        console.log(err.response.data)
-        console.log('--------Inside promise all-----------')
-        console.log(err.response.statusText)
-        // console.error(err.response)
+        // console.log('**********err.response**************')
+        // console.log(err.response.status)
+        // console.log('**********err.message***************')
+        // console.log(err.response.data)
+        // console.log('--------Inside promise all-----------')
+        // console.log(err.response.statusText)
+        // // console.error(err.response)
         res.status(err.response.status).send(err.response.statusText + ' : ' + err.response.data)
         // next(err)
     }

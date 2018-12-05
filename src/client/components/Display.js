@@ -12,7 +12,6 @@ class Display extends Component {
         this.state = {
             hDetails: {},
         }
-        this.handleChange = this.handleChange.bind(this)
     }
 
     componentDidMount(){
@@ -47,14 +46,10 @@ class Display extends Component {
         this.setState({ hDetails })
     }
 
-    handleChange(evt){
-        this.setState({ [evt.target.name]: evt.target.value })
-    }
 
     render(){
         const { holdings } = this.props
         const { hDetails } = this.state
-        // console.log(holdings)
         return(
             <table className='display_table'>
                 <tbody>
@@ -77,7 +72,7 @@ class Display extends Component {
                             </th>
                             <th>
                                 <font color={fontColor}>
-                                {`$${shares*(hDetails[symbol] ? hDetails[symbol].currentPrice : 11)}`}
+                                {`$${shares * ((hDetails[symbol] ? hDetails[symbol].currentPrice : 0) * 100) / 100}`}
                                 </font>
                             </th>
                         </tr>
