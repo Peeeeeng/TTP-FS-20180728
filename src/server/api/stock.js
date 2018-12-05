@@ -18,7 +18,7 @@ stockRouter.get('/', async (req, res, next) => {
 // user/stock/transaction get - get all current user's transactions
 stockRouter.get('/transaction', (req, res, next) => {
     const uid = req.session.userId
-    Transaction.findAll({ where: { userId: uid }})
+    Transaction.findAll({ where: { userId: uid }, order: [['createdAt', 'DESC']] })
                 .then((transactions) => {
                     res.send(transactions)
                 })
@@ -102,7 +102,8 @@ stockRouter.post('/transaction', async (req, res, next) => {
 
 
                 let resHolding = Holding.findOne({ where: { userId: uid, symbol: symbol}})
-                let resUser = user.update({ balance: user.balance - expense})
+                // let resUser = user.update({ balance: user.balance - expense})
+                let resUser = user.decrement('balance', { by: expense })
                 let resTransaction = Transaction.create(newTransaction)
                 let [ rHolding, rUser, rTransaction ] = await Promise.all([ resHolding, resUser, resTransaction ])
                 console.log(rHolding)
@@ -147,9 +148,9 @@ stockRouter.post('/transaction', async (req, res, next) => {
                         .catch(next)
                 User.findOne({ where: { id: uid } })
                     .then((user) => {
-                        console.log('User balance')
-                        console.log(user.balance)
-                        return user.update({ balance: user.balance + profit})
+                        // console.log('User balance')
+                        // console.log(user.balance)
+                        return user.increment('balance', { by: profit })
                     })
                     .then(() => {})
                     .catch(next)
