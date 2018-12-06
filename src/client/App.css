@@ -36,3 +36,27 @@
     transform: rotate(360deg);
   }
 }
+
+.signInButton {
+  background-color: #f2f4f7; 
+  color: black; 
+  border: 2px solid #008CBA;
+  transition-duration: 0.4s;
+}
+
+.signInButton:hover {
+  background-color: #008CBA;
+  color: white;
+}
+
+button {
+  background-color: #f2f4f7; 
+  color: black; 
+  border: 2px solid #008CBA;
+  transition-duration: 0.4s;
+}
+
+button:hover {
+  background-color: #008CBA;
+  color: white;
+}

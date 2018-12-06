@@ -32,8 +32,22 @@ class SignIn extends Component {
         return(
             <div>
                 <header className="App-header">
-                    {this.state.login ? null : <button type='button' name='login' onClick={this.handleChange}>Log In</button>}
-                    {this.state.login ? <button type='button' name='register'onClick={this.handleChange}>Register</button> : null}
+                    {this.state.login 
+                        ? 
+                        null 
+                        : 
+                        <button type='button' 
+                                name='login' 
+                                className='signInButton' 
+                                onClick={this.handleChange}>Log In</button>}
+                    {this.state.login 
+                        ? 
+                        <button type='button' 
+                                name='register' 
+                                className='signInButton' 
+                                onClick={this.handleChange}>Register</button> 
+                                : 
+                                null}
                 </header>
                 <main> 
                 {this.state.login ? <LogIn /> : <Register />}
