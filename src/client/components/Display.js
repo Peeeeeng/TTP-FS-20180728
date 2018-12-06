@@ -52,7 +52,6 @@ class Display extends Component {
     render(){
         const { holdings } = this.props
         const { hDetails } = this.state
-        console.log(holdings.length)
         return(
             <table className='display_table'>
                 <tbody>

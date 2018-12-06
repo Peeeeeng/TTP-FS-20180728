@@ -7,6 +7,7 @@ import SignIn from './SignIn'
 import Portfolio from './Portfolio'
 import Transactions from './Transactions'
 import Header from './Header'
+import { clearNote } from '../store/notification'
 
 class Root extends Component {
 
@@ -15,6 +16,7 @@ class Root extends Component {
     }
     render(){
         console.log(this.props.user)
+        this.props.clearNote()
         return(
             <div>
                 <nav>
@@ -48,7 +50,8 @@ const mapState = (state) => {
 
 const mapDispatch = (dispatch) => {
     return {
-        verifyUser: () => dispatch(thunkVarifyUser())
+        verifyUser: () => dispatch(thunkVarifyUser()),
+        clearNote: () => dispatch(clearNote())
     }
 }
 

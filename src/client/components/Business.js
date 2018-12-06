@@ -40,7 +40,6 @@ class Business extends Component {
                                 this.setState({ symbol: '', shares: 0 })
                             })
                             .catch((err) => {
-                                console.log('Transaction error!')
                                 console.error(err)
                             })
             } else {

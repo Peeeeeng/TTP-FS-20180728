@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { thunkGetHoldings } from './holdings'
 import { thunkVarifyUser } from './user'
+import { setNote } from './notification'
 
 const initialTransactions = {transactions: []}
 
@@ -16,7 +17,7 @@ export const thunkGetTrans = () => {
             const res = await axios.get(`/api/user/stock/transaction`)
             dispatch(getTrans(res.data))
         } catch (err) {
-            console.errors(err)
+            console.error(err)
             return err
         }
     }
@@ -37,11 +38,17 @@ export const thunkCreateTrans = (trans) => {
                 .catch((err) => {
                     // console.log('Create trans error occured')
                     if (err.response.status == 404) {
-                        alert('Symbold is incorrect.')
+                        dispatch(setNote('Symbold is incorrect.'))
                     } else if (err.response.status == 403) {
-                        alert('Does not have enough ')
+                        if(trans.activity === 'BUY'){
+                            dispatch(setNote('There is not have enough balance.'))
+                        } else if (trans.activity === 'SELL'){
+                            dispatch(setNote('You are selling more than you have.'))
+                        } else {
+                            dispatch(setNote(err.message))
+                        }
                     } else {
-                        alert(err.message)
+                        dispatch(setNote(err.message))
                     }
                     return err
                 })

@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
 import LogIn from './LogIn'
 import Register from './Register'
+import { connect } from 'react-redux'
+import { clearNote } from '../store/notification'
 
 
 class SignIn extends Component {
@@ -18,6 +20,9 @@ class SignIn extends Component {
             this.setState({ login: true })
         } else {
             this.setState({ login: false })
+        }
+        if(this.props.tip){
+            this.props.clearNote()
         }
     }
 
@@ -38,5 +43,16 @@ class SignIn extends Component {
     }
 }
 
+const mapState = state => {
+    return {
+        tip: state.notification.tip,
+    }
+}
 
-export default withRouter(SignIn)
+const mapDispatch = dispatch => {
+    return {
+        clearNote: () => dispatch(clearNote())
+    }
+}
+
+export default withRouter(connect(mapState, mapDispatch)(SignIn))

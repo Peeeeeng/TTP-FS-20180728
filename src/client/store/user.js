@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { setNote } from './notification'
 
 const initialUser = {
     userName: '',
@@ -32,7 +33,7 @@ export const thunkCreateUser = (user) => {
                 })
                 .catch((err) => {
                     console.error(err)
-                    alert("You've register with this email before.")
+                    dispatch(setNote("You've register with this email before."))
                     return err
                 })
     }
@@ -51,7 +52,7 @@ export const thunkLogin = (user) => {
                 })
                 .catch((err) => {
                     console.error(err)
-                    alert("Email and password not match.")
+                    dispatch(setNote("Email and password not match."))
                     return err
                 })
     }
