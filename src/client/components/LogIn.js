@@ -7,8 +7,13 @@ import { setNote, clearNote } from '../store/notification'
 class LogIn extends Component {
     constructor(props){
         super(props)
+        this.state = {
+            email: '',
+            password: ''
+        }
         this.handleSubmit = this.handleSubmit.bind(this)
         this.handleChange = this.handleChange.bind(this)
+        this.handleCleanup = this.handleCleanup.bind(this)
     }
 
 
@@ -35,13 +40,21 @@ class LogIn extends Component {
     }
 
     handleChange(evt){
-        
+        if(this.props.tip){
+            this.props.clearNote()
+        }
+        this.setState({ [evt.target.name]: evt.target.value })
+    }
+
+    handleCleanup(evt){
+        this.setState({ email: '', password: '' })
         if(this.props.tip){
             this.props.clearNote()
         }
     }
 
     render(){
+        const { email, password } = this.state
         return(
             <form onSubmit={this.handleSubmit}>
             <caption>User LogIn</caption>
@@ -49,12 +62,20 @@ class LogIn extends Component {
                 <tbody>
                     <tr>
                         <th>
-                            <input type='email' name='email' placeholder='Email' onChange={this.handleChange} />
+                            <input type='email' 
+                                    name='email' 
+                                    placeholder='Email' 
+                                    onChange={this.handleChange}
+                                    value={email} />
                         </th>
                     </tr>
                     <tr>
                         <th>
-                        <input type='password' name='password' placeholder='Password' onChange={this.handleChange} />
+                        <input type='password' 
+                                name='password' 
+                                placeholder='Password' 
+                                onChange={this.handleChange}
+                                value={password} />
                         </th>
                     </tr>
                     <tr>
@@ -65,7 +86,7 @@ class LogIn extends Component {
                     </tbody>
                 </table>
                 <button type='submit'>Log In</button>
-                <button type='button'>Cancel</button>
+                <button type='button' onClick={this.handleCleanup}>Cancel</button>
             </form>
         )
     }

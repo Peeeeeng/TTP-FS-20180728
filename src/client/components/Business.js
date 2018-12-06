@@ -36,7 +36,9 @@ class Business extends Component {
                     activity: evt.target.name
                 }
                 this.props.createTransaction(newTransaction)
-                            .then(() => {})
+                            .then(() => {
+                                this.setState({ symbol: '', shares: 0 })
+                            })
                             .catch((err) => {
                                 console.log('Transaction error!')
                                 console.error(err)
@@ -81,7 +83,7 @@ class Business extends Component {
                 <label>Qty</label>
                 </th>
                 <th>
-                <input type='text' name='shares' onChange={this.handleChange} value={shares} />
+                <input type='text' name='shares' onChange={this.handleChange} value={shares===0 ? '' : shares} />
                 </th>
             </tr>
             <tr>
