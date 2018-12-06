@@ -2,14 +2,13 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import { thunkLogin } from '../store/user'
+import { setNote, clearNote } from '../store/notification'
 
 class LogIn extends Component {
     constructor(props){
         super(props)
-        this.state = {
-            tip: ''
-        }
         this.handleSubmit = this.handleSubmit.bind(this)
+        this.handleChange = this.handleChange.bind(this)
     }
 
 
@@ -19,17 +18,26 @@ class LogIn extends Component {
             email: evt.target.email.value,
             password: evt.target.password.value
         }
+        const { setNote, clearNote } = this.props
         let email = user.email.split(' ').join('')
         let password = user.password.split(' ').join('')
         
         if(!email) {
-            this.setState({ tip: 'Email can not be empty.'})
+            setNote('Email can not be empty.')
         } else if(!password) {
-            this.setState({ tip: 'Password can not be empty.'})
+            setNote('Password can not be empty.')
         } else {
         let res = await this.props.userLogIn(user)
+        clearNote()
         console.log(res)
         this.props.history.push('/')
+        }
+    }
+
+    handleChange(evt){
+        
+        if(this.props.tip){
+            this.props.clearNote()
         }
     }
 
@@ -41,17 +49,17 @@ class LogIn extends Component {
                 <tbody>
                     <tr>
                         <th>
-                            <input type='email' name='email' placeholder='Email' />
+                            <input type='email' name='email' placeholder='Email' onChange={this.handleChange} />
                         </th>
                     </tr>
                     <tr>
                         <th>
-                        <input type='password' name='password' placeholder='Password'/>
+                        <input type='password' name='password' placeholder='Password' onChange={this.handleChange} />
                         </th>
                     </tr>
                     <tr>
                         <th>
-                            <font color='red'>{this.state.tip}</font>
+                            <font color='red'>{this.props.tip}</font>
                         </th>
                     </tr>
                     </tbody>
@@ -63,10 +71,18 @@ class LogIn extends Component {
     }
 }
 
-const mapDispatch = (dispatch) => {
+const mapState = (state) => {
     return {
-        userLogIn: (user) => dispatch(thunkLogin(user))
+        tip: state.notification.tip,
     }
 }
 
-export default withRouter(connect(null, mapDispatch)(LogIn))
+const mapDispatch = (dispatch) => {
+    return {
+        userLogIn: (user) => dispatch(thunkLogin(user)),
+        setNote: (tip) => dispatch(setNote(tip)),
+        clearNote: () => dispatch(clearNote())
+    }
+}
+
+export default withRouter(connect(mapState, mapDispatch)(LogIn))

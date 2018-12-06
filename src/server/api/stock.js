@@ -111,10 +111,10 @@ stockRouter.post('/transaction', async (req, res, next) => {
                 if(rHolding){
                     resHolding = await rHolding.update({ shares: rHolding.shares + shares })
                 } else {
-                    resHolding = await Holding.create({ symbol, shares, userId: uid})
+                    resHolding = await Holding.create({ symbol, shares, userId: uid })
                 }
 
-                res.send(resHolding)
+                res.send({ holding: resHolding, transaction: rTransaction })
             }
         } else if ( activity === 'SELL' ) {
             // sell - before update, check if there's enough shares to sell

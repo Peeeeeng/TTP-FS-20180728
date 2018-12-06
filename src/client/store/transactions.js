@@ -27,7 +27,7 @@ export const thunkCreateTrans = (trans) => {
         axios.post(`/api/user/stock/transaction`, trans)
                 .then((res) => {
                     // there might be another transaction complete in different place under same account
-                    console.log('This is create trans')
+                    console.log('This is creating trans')
                     console.log(res)
                     dispatch(thunkGetTrans())
                     dispatch(thunkGetHoldings())
@@ -36,8 +36,13 @@ export const thunkCreateTrans = (trans) => {
                 })
                 .catch((err) => {
                     // console.log('Create trans error occured')
-                    console.error(err)
-                    alert("The symbol is incorrect.")
+                    if (err.response.status == 404) {
+                        alert('Symbold is incorrect.')
+                    } else if (err.response.status == 403) {
+                        alert('Does not have enough ')
+                    } else {
+                        alert(err.message)
+                    }
                     return err
                 })
     }

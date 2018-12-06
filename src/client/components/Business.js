@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { thunkCreateTrans, thunkGetTrans } from '../store/transactions'
 import { thunkGetHoldings } from '../store/holdings'
 import { thunkVarifyUser } from '../store/user'
+import { setNote, clearNote } from '../store/notification'
 
 
 class Business extends Component {
@@ -11,19 +12,22 @@ class Business extends Component {
         this.state = {
             symbol: '',
             shares: 0,
-            tip: ''
         }
         this.handleTransaction = this.handleTransaction.bind(this)
         this.handleChange = this.handleChange.bind(this)
     }
 
     handleChange(evt){
-        this.setState({ [evt.target.name]: evt.target.value, tip: '' })
+        this.setState({ [evt.target.name]: evt.target.value })
+        if(this.props.tip){
+            this.props.clearNote()
+        }
     }
 
     handleTransaction(evt){
         evt.preventDefault()
         const { symbol, shares } = this.state
+        const { setNote } = this.props
         if(symbol.split(' ').join('')){
             if(shares > 0 && Number.isInteger(Number(shares))){
                 const newTransaction = {
@@ -32,16 +36,6 @@ class Business extends Component {
                     activity: evt.target.name
                 }
                 this.props.createTransaction(newTransaction)
-                            // .then((res) => {
-                            //     console.log('Transaction created successfully')
-                            //     return this.props.getHoldings()
-                            // })
-                            // .then(() => {
-                            //     return this.props.getTransactions()
-                            // })
-                            // .then(() => {
-                            //     this.props.getUser()
-                            // })
                             .then(() => {})
                             .catch((err) => {
                                 console.log('Transaction error!')
@@ -49,20 +43,25 @@ class Business extends Component {
                             })
             } else {
                 if(isNaN(shares)){
-                    this.setState({ shares: 0, tip: 'Qty needs to be a number.' })
+                    this.setState({ shares: 0 })
+                    setNote('Qty needs to be a number.')
                 } else if(shares < 1) {
-                    this.setState({ shares: 0, tip: 'Qty needs to be bigger than 0.' })
+                    this.setState({ shares: 0 })
+                    setNote('Qty needs to be bigger than 0.')
                 } else if(!Number.isInteger(Number(shares))) {
-                    this.setState({ shares: 0, tip: 'Qty needs to be a whole number.' })
+                    this.setState({ shares: 0 })
+                    setNote('Qty needs to be a whole number.')
                 }
             }
         } else {
-            this.setState({ symbol: '', tip: 'Symbol can not be empty.' })
+            this.setState({ symbol: '' })
+            setNote('Symbol can not be empty.')
         }
     }
 
     render(){
-        const { symbol, shares, tip } = this.state
+        const { symbol, shares } = this.state
+        const { tip } = this.props
         return(
             
             <form onSubmit={this.handleTransaction}>
@@ -103,7 +102,8 @@ const mapState = (state) => {
     return {
         user: state.user,
         holdings: state.holdings,
-        transactions: state.transactions
+        transactions: state.transactions,
+        tip: state.notification.tip
     }
 }
 
@@ -113,6 +113,8 @@ const mapDispatch = (dispatch) => {
         getTransactions: () => dispatch(thunkGetTrans()),
         getHoldings: () => dispatch(thunkGetHoldings()),
         getUser: () => dispatch(thunkVarifyUser()),
+        setNote: (tip) => dispatch(setNote(tip)),
+        clearNote: () => dispatch(clearNote())
     }
 }
 
