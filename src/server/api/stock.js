@@ -27,7 +27,6 @@ stockRouter.get('/transaction', (req, res, next) => {
 
 // user/stock/transaction post - create a buy/sell transaction 
 stockRouter.post('/transaction', async (req, res, next) => {
-    // check uid match session uid or get uid from session
     const uid = req.session.userId
     let { symbol, shares, activity } = req.body
     // shares can not be nagetive
@@ -40,30 +39,11 @@ stockRouter.post('/transaction', async (req, res, next) => {
             let resUser = User.findOne({ where: { id: uid } })
 
             // let user = await User.findById(1)
-            // console.log('current price is: ', currentPrice.data)
-            // console.log('current user is: ', user.dataValues)
-            // console.log('--------Before promise all-----------')
             let [rPrice, rUser] = await Promise.all([resPrice, resUser])
-                    // .then(function([...res]){
-                        // console.log('**********Inside promiseAll')
-                        // console.log(res[0].data)
-                        // console.log('**********Inside promiseAll')
-                        // console.log(res[1])
-                        // console.log('--------Inside promise all-----------')
-                        // currentPrice = res[0]
-                        // user = res[1]
-                    // })
-                    // .catch(function(err){
-                    //     console.error(err)
-                    // })
-            // console.log('Current Price is: ')
-            // console.log(currentPrice)
-
 
             let currentPrice = rPrice.data
             let user = rUser
 
-            // console.log('--------After promise all-----------')
             let expense = currentPrice * 100 * shares
             if (expense > user.balance){
                 res.status(403).send('Not enough balance for purchase')
@@ -120,12 +100,7 @@ stockRouter.post('/transaction', async (req, res, next) => {
             // sell - before update, check if there's enough shares to sell
             let resCurrentPrice = await axios.get(`${epPrefix}/stock/${symbol}/price`)
             let resHolding = await Holding.findOne({ where: { userId: uid, symbol: symbol }})
-            // Promise.all([currentPrice, holding])
-            //         .then(([pPrice, pHolding]) => {
-            //             currentPrice = pPrice * 100
-            //             holding = pHolding
-            //         })
-            //         .catch(next)
+
             let [ rCurrentPrice, rHolding ] = await Promise.all([ resCurrentPrice, resHolding ])
             let currentPrice = rCurrentPrice.data
             if (rHolding && rHolding.shares >= shares){
@@ -143,42 +118,44 @@ stockRouter.post('/transaction', async (req, res, next) => {
                 // 3) create new transaction in Transaction
 
                 // console.log('Profit is: ', profit)
-                // if(rHolding.shares === shares){
-                //     resHolding = rHolding.destroy()
-                // } else {
-                //     resHolding = rHolding.update({ shares: rHolding.shares - shares })
-                // }
-                // let resUser = User.findOne({ where: { id: uid } })
-                // let resTransaction = Transaction.create(newTransaction)
-                // let [ rUser ] = await Promise.all([ resUser, resHolding, resTransaction ])
-                // rUser.increment('balance', { by: profit })
-                //         .then(() => {})
-                //         .catch(next)
-
                 if(rHolding.shares === shares){
                     resHolding = rHolding.destroy()
                 } else {
-                    rHolding.update({ shares: rHolding.shares - shares })
-                            .then(() => {})
-                            .catch(next)
+                    resHolding = rHolding.update({ shares: rHolding.shares - shares })
                 }
-                User.findOne({ where: { id: uid } })
-                    .then((user) => {
-                        // console.log('User balance')
-                        // console.log(user.balance)
-                        return user.increment('balance', { by: profit })
-                    })
-                    .then(() => {})
-                    .catch(next)
-                Transaction.create(newTransaction)
-                            .then((transaction) => {
-                                res.send('success')
-                            })
-                            .catch(next)
+                let resUser = User.findOne({ where: { id: uid } })
+                let resTransaction = Transaction.create(newTransaction)
+                let [ rUser ] = await Promise.all([ resUser, resHolding, resTransaction ])
+                rUser.increment('balance', { by: profit })
+                        .then(() => { res.send('Success') })
+                        .catch(next)
+
+                // if(rHolding.shares === shares){
+                //     resHolding = rHolding.destroy()
+                // } else {
+                //     rHolding.update({ shares: rHolding.shares - shares })
+                //             .then(() => {})
+                //             .catch(next)
+                // }
+                // User.findOne({ where: { id: uid } })
+                //     .then((user) => {
+                //         // console.log('User balance')
+                //         // console.log(user.balance)
+                //         return user.increment('balance', { by: profit })
+                //     })
+                //     .then(() => {})
+                //     .catch(next)
+                // Transaction.create(newTransaction)
+                //             .then((transaction) => {
+                //                 res.send('success')
+                //             })
+                //             .catch(next)
             } else {
                 res.status(403).send('Do not have enough shares to sell')
             }
             // res.send('Connect success!')
+        } else {
+            res.status(400).send('Not recognized')
         }
 
     } catch(err) {

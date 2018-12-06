@@ -7,22 +7,28 @@ const promoBalance = 500000
 // user post - create account, new user gets $5000 to start with(promo code maybe)
 userRouter.post('/', async (req, res, next) => {
     const { userName, email, password } = req.body
-    const newUser = {
-        userName,
-        email: email.toLowerCase(),
-        password,
-        balance: promoBalance
+    if (userName && email && password){
+        const newUser = {
+            userName,
+            email: email.toLowerCase(),
+            password,
+            balance: promoBalance
+        }
+        User.create(newUser)
+            .then((user) => {
+                res.send(user)
+            })
+            .catch(next)
+    } else {
+        res.status(403).send('Options can not be empty.')
     }
-    User.create(newUser)
-        .then((user) => {
-            res.send(user)
-        })
-        .catch(next)
+
 })
 
 userRouter.put('/login', (req, res, next) => {
     const { email, password } = req.body
-    User.findOne({ where: { email, password }})
+    if (email && password){
+        User.findOne({ where: { email, password }})
         .then((user) => {
             if(user){
                 req.session.userId = user.id
@@ -36,6 +42,10 @@ userRouter.put('/login', (req, res, next) => {
             }
         })
         .catch(next)
+    } else {
+        res.status(403).send('Options can not be empty.')
+    }
+    
 })
 
 userRouter.get('/varify', (req, res, next) => {
@@ -59,8 +69,8 @@ userRouter.get('/varify', (req, res, next) => {
 userRouter.put('/', async (req, res, next) => {
     const uid = req.session.userId
     const { userName } = req.body
-    // if current user match uid / or just get uid from session
-    User.findOne({ where: { id: uid }})
+    if (userName){
+        User.findOne({ where: { id: uid }})
         .then((user) => {
             return user.update(userName)
         })
@@ -68,6 +78,9 @@ userRouter.put('/', async (req, res, next) => {
             res.send(user)
         })
         .catch(next)
+    } else {
+        res.status(403).send('Change option can not be empty.')
+    } 
 })
 
 userRouter.use('/stock', require('./stock'))
