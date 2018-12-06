@@ -13,6 +13,7 @@ class Transactions extends Component {
         return(
             <table className='display_table'>
                 <tbody>
+                    {!transactions.length ? <tr><th><font color='green'>You do not have any transaction record, yet.</font></th></tr> : null}
                 {transactions.map((transaction) => {
                     return (
                         <tr key={transaction.id}>

@@ -32,27 +32,31 @@ class Display extends Component {
     }
 
     async updateH(holdings){
-        let hdPromis = holdings.map((holding) => {
-            return axios.get(`https://api.iextrading.com/1.0/stock/${holding.symbol}/quote`)
-        })
-        let hdRes = await Promise.all(hdPromis)
-        let hDetails = {}
-        for(let i = 0; i < hdRes.length; i++){
-            const { symbol, open, latestPrice } = hdRes[i].data
-            hDetails[symbol.toLowerCase()] = { openPrice: open, currentPrice: latestPrice}
+        if(holdings.length){
+            let hdPromis = holdings.map((holding) => {
+                return axios.get(`https://api.iextrading.com/1.0/stock/${holding.symbol}/quote`)
+            })
+            let hdRes = await Promise.all(hdPromis)
+            let hDetails = {}
+            for(let i = 0; i < hdRes.length; i++){
+                const { symbol, open, latestPrice } = hdRes[i].data
+                hDetails[symbol.toLowerCase()] = { openPrice: open, currentPrice: latestPrice}
+            }
+            // console.log('Holding details:')
+            // console.log(hDetails)
+            this.setState({ hDetails })
         }
-        // console.log('Holding details:')
-        // console.log(hDetails)
-        this.setState({ hDetails })
     }
 
 
     render(){
         const { holdings } = this.props
         const { hDetails } = this.state
+        console.log(holdings.length)
         return(
             <table className='display_table'>
                 <tbody>
+                    {!holdings.length ? <tr><th><font color='green'>You do not hold any stock.</font></th></tr> : null}
                 {holdings.map((holding) => {
                     const { id, symbol, shares } = holding
                     let fontColor = 'grey'
