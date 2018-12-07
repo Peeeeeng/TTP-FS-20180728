@@ -1,5 +1,6 @@
 const stockRouter = require('express').Router()
 const axios = require('axios')
+const sequelize = require('sequelize')
 
 const { epPrefix } = require('../utils/api-utils')
 const { User, Holding, Transaction } = require('../db')
@@ -35,26 +36,63 @@ stockRouter.post('/transaction', async (req, res, next) => {
 
         if ( activity === 'BUY' ){
             // buy - before update, check if there's enough money to buy
+            // return sequelize.transaction(function(t) {
+
+
+
+            // })
             let resPrice = axios.get(`${epPrefix}/stock/${symbol}/price`)
             let resUser = User.findOne({ where: { id: uid } })
 
             // let user = await User.findById(1)
-            let [rPrice, rUser] = await Promise.all([resPrice, resUser])
+            // let [rPrice, rUser] = await 
+            Promise.all([resPrice, resUser])
+                    .then(([resPrice, user]) => {
+                        let currentPrice = resPrice.data * 100
+                        let expense = currentPrice * shares
+                        if (expense > user.balance){
+                            res.status(403).send('Not enough balance for purchase')
+                        } else {
+                            let newTransaction = {
+                                symbol,
+                                activity,
+                                price: currentPrice,
+                                shares,
+                                userId: uid
+                            }
+                            let resHolding = Holding.findOne({ where: { userId: uid, symbol: symbol}})
+                            let resUser = user.decrement('balance', { by: expense })
+                            let resTransaction = Transaction.create(newTransaction)
+                            return Promise.all([ resHolding, resUser, resTransaction ])
+                        }
+                    })
+                    .then(([ rHolding, rUser, rTransaction ]) => {
+                        if(rHolding){
+                            return rHolding.update({ shares: rHolding.shares + shares })
+                        } else {
+                            return Holding.create({ symbol, shares, userId: uid })
+                        }
+                    })
+                    .then((resHolding) => {
+                        res.send({ holding: resHolding })
+                    })
+                    .catch(next)
 
-            let currentPrice = rPrice.data
-            let user = rUser
+            // let currentPrice = rPrice.data
+            // let user = rUser
 
-            let expense = currentPrice * 100 * shares
-            if (expense > user.balance){
-                res.status(403).send('Not enough balance for purchase')
-            } else {
-                let newTransaction = {
-                    symbol,
-                    activity,
-                    price: currentPrice * 100,
-                    shares,
-                    userId: uid
-                }
+            // let expense = currentPrice * 100 * shares
+            // if (expense > user.balance){
+            //     res.status(403).send('Not enough balance for purchase')
+            // } else {
+            //     let newTransaction = {
+            //         symbol,
+            //         activity,
+            //         price: currentPrice * 100,
+            //         shares,
+            //         userId: uid
+            //     }
+
                 // create purchase:
                 // 1) search holding, add or create share in Holding
                 // 2) deduct balance, update balance in User with new balance
@@ -81,21 +119,21 @@ stockRouter.post('/transaction', async (req, res, next) => {
 
 
 
-                let resHolding = Holding.findOne({ where: { userId: uid, symbol: symbol}})
-                // let resUser = user.update({ balance: user.balance - expense})
-                let resUser = user.decrement('balance', { by: expense })
-                let resTransaction = Transaction.create(newTransaction)
-                let [ rHolding, rUser, rTransaction ] = await Promise.all([ resHolding, resUser, resTransaction ])
-                console.log(rHolding)
+                // let resHolding = Holding.findOne({ where: { userId: uid, symbol: symbol}})
+                // // let resUser = user.update({ balance: user.balance - expense})
+                // let resUser = user.decrement('balance', { by: expense })
+                // let resTransaction = Transaction.create(newTransaction)
+                // let [ rHolding, rUser, rTransaction ] = await Promise.all([ resHolding, resUser, resTransaction ])
+                // console.log(rHolding)
                 
-                if(rHolding){
-                    resHolding = await rHolding.update({ shares: rHolding.shares + shares })
-                } else {
-                    resHolding = await Holding.create({ symbol, shares, userId: uid })
-                }
+                // if(rHolding){
+                //     resHolding = await rHolding.update({ shares: rHolding.shares + shares })
+                // } else {
+                //     resHolding = await Holding.create({ symbol, shares, userId: uid })
+                // }
 
-                res.send({ holding: resHolding, transaction: rTransaction })
-            }
+                // res.send({ holding: resHolding, transaction: rTransaction })
+            // }
         } else if ( activity === 'SELL' ) {
             // sell - before update, check if there's enough shares to sell
             let resCurrentPrice = await axios.get(`${epPrefix}/stock/${symbol}/price`)
